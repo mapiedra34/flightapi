@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<link rel="stylesheet" href="/styles.css">
+
+<html>
+<head>
+    <title>Login</title>
+</head>
+<body>
+    <div class="container">
+    <h2>Login</h2>
+    <form action="/login" method="post">
+        <label>Username:</label>
+        <input type="text" name="username" required><br><br>
+        <label>Password:</label>
+        <input type="password" name="password" required><br><br>
+        <button type="submit">Login</button>
+    </form>
+
+    <p><a href="/register.html">Don't have an account? Register</a></p>
+
+    <p style="color: red;">
+        <script>
+            const params = new URLSearchParams(window.location.search);
+            if (params.get("error") === "invalid") {
+                document.write("Invalid credentials.");
+            }
+            if (params.get("logout")) {
+                document.write("You have been logged out.");
+            }
+            if (params.get("success")) {
+                document.write("Registration successful! Please log in.");
+            }
+        </script>
+    </p>
+    </div>
+</body>
+</html>

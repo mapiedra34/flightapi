@@ -1,0 +1,44 @@
+package com.example.flightapi.controller;
+
+import com.example.flightapi.model.Booking;
+import com.example.flightapi.repository.BookingRepository;
+import jakarta.servlet.http.HttpSession;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.http.ResponseEntity;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+class BookingControllerTest {
+
+    @Test
+    void testBookFlight_Unauthorized() {
+        BookingRepository mockRepo = mock(BookingRepository.class);
+        BookingController controller = new BookingController();
+        controller.bookingRepository = mockRepo;
+
+        HttpSession session = mock(HttpSession.class);
+        when(session.getAttribute("user")).thenReturn(null);
+
+        ResponseEntity<?> response = controller.bookFlight(new Booking(), session);
+        assertEquals(401, response.getStatusCodeValue());
+    }
+
+    @Test
+    void testBookFlight_Authorized() {
+        BookingRepository mockRepo = mock(BookingRepository.class);
+        BookingController controller = new BookingController();
+        controller.bookingRepository = mockRepo;
+
+        Booking booking = new Booking();
+        HttpSession session = mock(HttpSession.class);
+        when(session.getAttribute("user")).thenReturn("tester");
+
+        ResponseEntity<?> response = controller.bookFlight(booking, session);
+        assertEquals(200, response.getStatusCodeValue());
+        verify(mockRepo).save(Mockito.argThat(b -> b.getUsername().equals("tester")));
+    }
+}

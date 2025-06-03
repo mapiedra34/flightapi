@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<link rel="stylesheet" href="/styles.css">
+
+<html>
+<head>
+    <title>Book Flight</title>
+</head>
+<body>
+    <div class="container">
+    <h2>Book a Flight</h2>
+    <form id="bookingForm">
+        <label>Flight Number:</label>
+        <input type="text" name="flightNumber" required><br><br>
+
+        <label>Departure:</label>
+        <input type="text" name="departure" required><br><br>
+
+        <label>Arrival:</label>
+        <input type="text" name="arrival" required><br><br>
+
+        <label>Number of Passengers:</label>
+        <input type="number" name="passengers" id="passengers" min="1" value="1" required><br><br>
+
+        <p><strong>Total Price:</strong> $<span id="totalPrice">0.00</span></p>
+
+        <button type="submit">Book</button>
+    </form>
+
+    <p><a href="/logout">Logout</a></p>
+
+    <h3>Your Bookings</h3>
+    <ul id="bookingList"></ul>
+
+    <script>
+        // Auto-fill form using selected flight
+        window.onload = function () {
+            const flight = JSON.parse(localStorage.getItem("selectedFlight"));
+            const passengersInput = document.getElementById("passengers");
+            const totalPriceEl = document.getElementById("totalPrice");
+
+            if (flight) {
+                document.querySelector('input[name="flightNumber"]').value = flight.flightNumber || "";
+                document.querySelector('input[name="departure"]').value = flight.departureCity || flight.from || "";
+                document.querySelector('input[name="arrival"]').value = flight.arrivalCity || flight.to || "";
+
+                const defaultPassengers = flight.passengers || 1;
+                passengersInput.value = defaultPassengers;
+
+                const updateTotal = () => {
+                    const passengers = parseInt(passengersInput.value) || 1;
+                    const total = passengers * (flight.price || 0);
+                    totalPriceEl.textContent = total.toFixed(2);
+                };
+
+                passengersInput.addEventListener("input", updateTotal);
+                updateTotal();
+            }
+
+            loadBookings();
+        };
+
+        // Submit the booking form
+        document.getElementById("bookingForm").onsubmit = async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+
+            const response = await fetch("/api/bookings/book", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.text();
+            alert(result);
+            loadBookings();
+        };
+
+        // Load bookings for current user
+        async function loadBookings() {
+            const res = await fetch("/api/bookings/mybookings");
+            const list = document.getElementById("bookingList");
+            list.innerHTML = "";
+
+            if (res.ok) {
+                const bookings = await res.json();
+                bookings.forEach(b => {
+                    const item = document.createElement("li");
+                    item.textContent = `${b.flightNumber} — ${b.departure} → ${b.arrival} on ${b.bookingDate}`;
+                    list.appendChild(item);
+                });
+            } else {
+                list.textContent = "Please log in to view bookings.";
+            }
+        }
+    </script>
+    </div>
+</body>
+</html>

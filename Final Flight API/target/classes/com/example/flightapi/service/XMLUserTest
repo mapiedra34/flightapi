@@ -1,0 +1,45 @@
+package com.example.flightapi.service;
+
+import org.junit.jupiter.api.*;
+import java.io.File;
+
+import static org.junit.jupiter.api.Assertions.*;
+//this is to test the login system
+class XMLUserServiceTest {
+
+    private XMLUserService userService;
+    private final String testUsername = "testuser";
+    private final String testPassword = "testpass";
+
+    @BeforeEach
+    void setup() {
+        userService = new XMLUserService();
+        // Clean file before each test
+        File file = new File("src/main/resources/users.xml");
+        if (file.exists()) file.delete();
+    }
+
+    @Test
+    void testRegisterUserSuccess() {
+        boolean result = userService.registerUser(testUsername, testPassword);
+        assertTrue(result, "User should be registered successfully");
+    }
+
+    @Test
+    void testRegisterDuplicateUser() {
+        userService.registerUser(testUsername, testPassword);
+        boolean result = userService.registerUser(testUsername, testPassword);
+        assertFalse(result, "Duplicate user registration should fail");
+    }
+
+    @Test
+    void testAuthenticateUserSuccess() {
+        userService.registerUser(testUsername, testPassword);
+        assertTrue(userService.authenticateUser(testUsername, testPassword));
+    }
+
+    @Test
+    void testAuthenticateInvalidUser() {
+        assertFalse(userService.authenticateUser("fake", "wrong"));
+    }
+}
